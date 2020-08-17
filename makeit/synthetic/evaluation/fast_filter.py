@@ -28,7 +28,9 @@ class FastFilterScorer(Scorer):
     def load(self, model_path):
         MyLogger.print_and_log('Starting to load fast filter', fast_filter_loc)
         self.model = load_model(model_path, custom_objects={
-                                'Highway_self': Highway_self, 'pos_ct': pos_ct, 'true_pos': true_pos, 'real_pos': real_pos})
+                                'Highway_self': Highway_self,
+                                 'pos_ct': pos_ct, 'true_pos': true_pos, 'real_pos': real_pos
+                                 })
         self.model._make_predict_function()
         MyLogger.print_and_log('Done loading fast filter', fast_filter_loc)
 

@@ -344,6 +344,7 @@ class RetroTransformer(TemplateTransformer):
             else:
                 outcomes = template['rxn'].RunReactants([react_mol])
         except Exception as e:
+            print(e)
             return []
 
         results = []
@@ -414,7 +415,8 @@ if __name__ == '__main__':
     t.load(chiral=True, refs=False, rxns=True)
 
 
-    outcomes = t.get_outcomes('CCOC(=O)[C@H]1C[C@@H](C(=O)N2[C@@H](c3ccccc3)CC[C@@H]2c2ccccc2)[C@@H](c2ccccc2)N1', 100, (gc.relevanceheuristic, gc.relevance))
+    # outcomes = t.get_outcomes('CCOC(=O)[C@H]1C[C@@H](C(=O)N2[C@@H](c3ccccc3)CC[C@@H]2c2ccccc2)[C@@H](c2ccccc2)N1', 100, (gc.relevanceheuristic, gc.relevance))
+    outcomes = t.get_outcomes('COC1=CC(NC2=NC=C(F)C(NC3=NC4=C(OC(C)(C)C(=O)N4COP(O)(O)=O)C=C3)=N2)=CC(OC)=C1OC', 100, (gc.relevanceheuristic, gc.relevance))
     precursors = outcomes.precursors
 
     print([precursor.smiles_list for precursor in precursors])

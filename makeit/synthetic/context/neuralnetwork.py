@@ -82,6 +82,12 @@ class NeuralNetContextRecommender(ContextRecommender):
         with open(c1_dict_file, "rb") as C1_DICT_F:
             self.c1_dict = pickle.load(C1_DICT_F)
 
+        self.inverse_c1_dict = {v: k for k,v in self.c1_dict.items()}
+        self.inverse_s1_dict = {v: k for k,v in self.s1_dict.items()}
+        self.inverse_s2_dict = {v: k for k,v in self.s2_dict.items()}
+        self.inverse_r1_dict = {v: k for k,v in self.r1_dict.items()}
+        self.inverse_r2_dict = {v: k for k,v in self.r2_dict.items()}
+        
         self.c1_dim = self.nnModel.input_shape[2][1]
         self.r1_dim = self.nnModel.input_shape[3][1]
         self.r2_dim = self.nnModel.input_shape[4][1]
@@ -118,7 +124,7 @@ class NeuralNetContextRecommender(ContextRecommender):
         self.max_int = userInput['max_int']
         self.max_context = userInput['max_context']
 
-    def get_n_conditions(self, rxn, n=10, singleSlvt=True, with_smiles=True, return_scores=False):
+    def get_n_conditions(self, rxn, n=10, singleSlvt=True, with_smiles=True, return_scores=False, return_separate = False):
         """
         Reaction condition recommendations for a rxn (SMILES) from top n NN
         Returns the top n parseable conditions.
@@ -151,8 +157,10 @@ class NeuralNetContextRecommender(ContextRecommender):
             inputs = [pfp, rxnfp, c1_input, r1_input,
                       r2_input, s1_input, s2_input]
             
-            (top_combos,top_combo_scores)=self.predict_top_combos(inputs=inputs)
-            
+            if return_separate == False:
+                (top_combos,top_combo_scores)=self.predict_top_combos(inputs=inputs)
+            else:
+                (top_combos,top_combo_scores)=self.predict_top_combos(inputs=inputs, return_categories_only=True)
             if return_scores:
                 return (top_combos[:n],top_combo_scores[:n])
             else:
@@ -317,7 +325,7 @@ class NeuralNetContextRecommender(ContextRecommender):
                             #     cat_name = [cat for cat in cat_name if 'Reaxys' not in cat]
                             ##for testing purpose only, output order as training
                             if return_categories_only:
-                                context_combos.append([c1_cdt,s1_cdt,s2_cdt,r1_cdt,r2_cdt,T_pred[0][0][0]])
+                                context_combos.append([c1_name,s1_name,s2_name,r1_name,r2_name,T_pred[0][0][0]])
                             ## esle ouptupt format compatible with the overall framework
                             else:
                                 context_combos.append(
@@ -345,6 +353,21 @@ class NeuralNetContextRecommender(ContextRecommender):
             return self.r1_dict[category]
         elif chem_type == 'r2':
             return self.r2_dict[category]
+
+    def name_to_category(self,chem_type,name):
+        try:
+            if chem_type == 'c1':
+                return self.inverse_c1_dict[name]
+            elif chem_type == 's1':
+                return self.inverse_s1_dict[name]
+            elif chem_type == 's2':
+                return self.inverse_s2_dict[name]
+            elif chem_type == 'r1':
+                return self.inverse_r1_dict[name]
+            elif chem_type == 'r2':
+                return self.inverse_r2_dict[name]
+        except:
+            print('name {} not found!'.format(name))
         
 
 if __name__ == '__main__':
@@ -352,5 +375,5 @@ if __name__ == '__main__':
 
     cont.load_nn_model(model_path=gc.NEURALNET_CONTEXT_REC['model_path'], info_path=gc.NEURALNET_CONTEXT_REC[
                        'info_path'], weights_path=gc.NEURALNET_CONTEXT_REC['weights_path'])
-    print(cont.get_n_conditions('CC1(C)OBOC1(C)C.Cc1ccc(Br)cc1>>Cc1cccc(B2OC(C)(C)C(C)(C)O2)c1', 10, with_smiles=False, return_scores=True))
-
+    print(cont.get_n_conditions('CC(C)Cc1ccccc1.CCC(=O)O>>CCC(=O)c1ccc(CC(C)C)cc1', 10, with_smiles=False, return_scores=False,return_separate=True))
+    # print(cont.name_to_category('c1','Reaxys Name palladium on activated charcoal'))
